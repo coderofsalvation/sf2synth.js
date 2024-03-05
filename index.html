@@ -1,0 +1,99 @@
+<html>
+  <body>
+    <script>
+      window.SoundFont = function(){}
+      window.Riff = function(){}
+      function goog(){}
+      goog.provide = function(){}
+      goog.require = function(){}
+      goog.scope = function(){}
+      goog.global = window
+    </script>
+
+    <script>
+      window.start = function start(){
+        //fetch('./2gmgsmt.sf2')
+        fetch('./test_reverb.sf2')
+        .then( (res) => res.arrayBuffer() )
+        .then( (res) => {
+            sf2syn = new SoundFont.Synthesizer( new Uint8Array(res) )
+            sf2syn.init({
+              mixer: (audio) => {
+                //audio.input.connect(audio.output)
+                /* setup alternative fx routing */
+                audio.reverb = new SoundFont.fx.reverb( audio.ctx, { seconds:2, decay:2, reverse:0})
+                audio.input.connect(audio.reverb.input)
+                audio.input.connect(audio.output)
+                audio.reverb.connect( audio.output )
+                audio.input.gain.value *= 0.75
+              }
+            })
+            sf2syn.start()
+        
+            // setup player
+            // Initialize player and register event handler
+            const Player = new MidiPlayer.Player(function(e) {
+              switch( e.name ){
+                case "Note on":{
+                  sf2syn.noteOn( e.channel-1, e.noteNumber, e.velocity )
+                  break;
+                }
+                case "Note off":{
+                  sf2syn.noteOff( e.channel-1, e.noteNumber, 0 )
+                  break;
+                }
+              }
+            });
+            Player.on('fileLoaded', function() {
+              console.log("loaded midi")
+            });
+
+            Player.on('playing', function(currentTick) {
+                // Do something while player is playing
+                // (this is repeatedly triggered within the play loop)
+            });
+
+            Player.on('midiEvent', function(e) {
+            });
+
+            Player.on('endOfFile', function() {
+              console.log("end")
+            });
+            // Load a MIDI file
+            fetch('./test.mid')
+            .then( (res) => res.arrayBuffer() )
+            .then( (res) => {
+              Player.loadArrayBuffer(res)
+              Player.play();
+            })
+
+            // realtime generated chord
+            let notes = [
+              60+Math.round(Math.random()*10),
+    //          60+Math.round(Math.random()*10),
+    //          60+Math.round(Math.random()*10)
+            ]
+            sf2syn.noteOn(0, notes[0], 127 )
+   //         sf2syn.noteOn(1, notes[1], 127 )
+   //         sf2syn.noteOn(2, notes[2], 127 )
+            setTimeout(()=>{
+              sf2syn.noteOff(0, notes[0], 0 )
+              sf2syn.allSoundOff(0)
+    //          sf2syn.noteOff(1, notes[1], 0 )
+    //          sf2syn.noteOff(2, notes[2], 0 )
+            }, 200,  notes)
+        })
+      }
+
+    </script>
+    <button onclick="window.start()">play</button>
+    <script src="./src/midiplayer.js"></script>
+    <script src="./src/typedef.js"></script>
+    <script src="./src/riff.js"></script>
+    <script src="./src/sf2.js"></script>
+    <script src="./src/sound_font_synth_note.js"></script>
+    <script src="./src/sound_font_synth.js"></script>
+    <script src="./src/fx/reverb.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@logue/smfplayer@latest/dist/smfplayer.iife.min.js"></script>
+  </body>
+</html>

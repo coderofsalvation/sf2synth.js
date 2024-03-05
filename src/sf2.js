@@ -3,8 +3,6 @@ goog.provide('SoundFont.Parser');
 goog.require('Typedef');
 goog.require('Riff.Parser');
 
-goog.scope(function() {
-
 /**
  * @param {ByteArray} input
  * @param {Object=} opt_params
@@ -40,9 +38,9 @@ SoundFont.Parser = function(input, opt_params) {
 
 SoundFont.Parser.prototype.parse = function() {
   /** @type {Riff.Parser} */
-  var parser = new Riff.Parser(this.input, this.parserOption);
+  let parser = new Riff.Parser(this.input, this.parserOption);
   /** @type {?Riff.Chunk} */
-  var chunk;
+  let chunk;
 
   // parse RIFF chunk
   parser.parse();
@@ -65,13 +63,13 @@ SoundFont.Parser.prototype.parse = function() {
  */
 SoundFont.Parser.prototype.parseRiffChunk = function(chunk) {
   /** @type {Riff.Parser} */
-  var parser;
+  let parser;
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {string} */
-  var signature;
+  let signature;
 
   // check parse target
   if (chunk.type !== 'RIFF') {
@@ -106,13 +104,13 @@ SoundFont.Parser.prototype.parseRiffChunk = function(chunk) {
  */
 SoundFont.Parser.prototype.parseInfoList = function(chunk) {
   /** @type {Riff.Parser} */
-  var parser;
+  let parser;
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {string} */
-  var signature;
+  let signature;
 
   // check parse target
   if (chunk.type !== 'LIST') {
@@ -135,13 +133,13 @@ SoundFont.Parser.prototype.parseInfoList = function(chunk) {
  */
 SoundFont.Parser.prototype.parseSdtaList = function(chunk) {
   /** @type {Riff.Parser} */
-  var parser;
+  let parser;
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {string} */
-  var signature;
+  let signature;
 
   // check parse target
   if (chunk.type !== 'LIST') {
@@ -170,13 +168,13 @@ SoundFont.Parser.prototype.parseSdtaList = function(chunk) {
  */
 SoundFont.Parser.prototype.parsePdtaList = function(chunk) {
   /** @type {Riff.Parser} */
-  var parser;
+  let parser;
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {string} */
-  var signature;
+  let signature;
 
   // check parse target
   if (chunk.type !== 'LIST') {
@@ -214,13 +212,13 @@ SoundFont.Parser.prototype.parsePdtaList = function(chunk) {
  */
 SoundFont.Parser.prototype.parsePhdr = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {Array.<Object>} */
-  var presetHeader = this.presetHeader = [];
+  let presetHeader = this.presetHeader = [];
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
 
   // check parse target
   if (chunk.type !== 'phdr') {
@@ -245,13 +243,13 @@ SoundFont.Parser.prototype.parsePhdr = function(chunk) {
  */
 SoundFont.Parser.prototype.parsePbag = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {Array.<Object>} */
-  var presetZone = this.presetZone = [];
+  let presetZone = this.presetZone = [];
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
 
   // check parse target
   if (chunk.type !== 'pbag') {
@@ -294,13 +292,13 @@ SoundFont.Parser.prototype.parsePgen = function(chunk) {
  */
 SoundFont.Parser.prototype.parseInst = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {Array.<Object>} */
-  var instrument = this.instrument = [];
+  let instrument = this.instrument = [];
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
 
   // check parse target
   if (chunk.type !== 'inst') {
@@ -320,13 +318,13 @@ SoundFont.Parser.prototype.parseInst = function(chunk) {
  */
 SoundFont.Parser.prototype.parseIbag = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {Array.<Object>} */
-  var instrumentZone = this.instrumentZone = [];
+  let instrumentZone = this.instrumentZone = [];
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
 
   // check parse target
   if (chunk.type !== 'ibag') {
@@ -372,35 +370,35 @@ SoundFont.Parser.prototype.parseIgen = function(chunk) {
  */
 SoundFont.Parser.prototype.parseShdr = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {Array.<Object>} */
-  var samples = this.sample = [];
+  let samples = this.sample = [];
   /** @type {Array.<Object>} */
-  var sampleHeader = this.sampleHeader = [];
+  let sampleHeader = this.sampleHeader = [];
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
   /** @type {string} */
-  var sampleName;
+  let sampleName;
   /** @type {number} */
-  var start;
+  let start;
   /** @type {number} */
-  var end;
+  let end;
   /** @type {number} */
-  var startLoop;
+  let startLoop;
   /** @type {number} */
-  var endLoop;
+  let endLoop;
   /** @type {number} */
-  var sampleRate;
+  let sampleRate;
   /** @type {number} */
-  var originalPitch;
+  let originalPitch;
   /** @type {number} */
-  var pitchCorrection;
+  let pitchCorrection;
   /** @type {number} */
-  var sampleLink;
+  let sampleLink;
   /** @type {number} */
-  var sampleType;
+  let sampleType;
 
   // check parse target
   if (chunk.type !== 'shdr') {
@@ -430,7 +428,7 @@ SoundFont.Parser.prototype.parseShdr = function(chunk) {
     sampleType = data[ip++] | (data[ip++] << 8);
 
     //*
-    var sample = new Int16Array(new Uint8Array(data.subarray(
+    let sample = new Int16Array(new Uint8Array(data.subarray(
       this.samplingData.offset + start * 2,
       this.samplingData.offset + end   * 2
     )).buffer);
@@ -439,7 +437,7 @@ SoundFont.Parser.prototype.parseShdr = function(chunk) {
     endLoop -= start;
 
     if (sampleRate > 0) {
-      var adjust = this.adjustSampleData(sample, sampleRate);
+      let adjust = this.adjustSampleData(sample, sampleRate);
       sample = adjust.sample;
       sampleRate *= adjust.multiply;
       startLoop *= adjust.multiply;
@@ -468,15 +466,15 @@ SoundFont.Parser.prototype.parseShdr = function(chunk) {
 
 SoundFont.Parser.prototype.adjustSampleData = function(sample, sampleRate) {
   /** @type {Int16Array} */
-  var newSample;
+  let newSample;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {number} */
-  var j;
+  let j;
   /** @type {number} */
-  var multiply = 1;
+  let multiply = 1;
 
   // buffer
   while (sampleRate < 22050) {
@@ -502,17 +500,17 @@ SoundFont.Parser.prototype.adjustSampleData = function(sample, sampleRate) {
  */
 SoundFont.Parser.prototype.parseModulator = function(chunk) {
     /** @type {ByteArray} */
-    var data = this.input;
+    let data = this.input;
     /** @type {number} */
-    var ip = chunk.offset;
+    let ip = chunk.offset;
     /** @type {number} */
-    var size = chunk.offset + chunk.size;
+    let size = chunk.offset + chunk.size;
     /** @type {number} */
-    var code;
+    let code;
     /** @type {string} */
-    var key;
+    let key;
     /** @type {Array.<Object>} */
-    var output = [];
+    let output = [];
 
     while (ip < size) {
       // Src  Oper
@@ -577,17 +575,17 @@ SoundFont.Parser.prototype.parseModulator = function(chunk) {
  */
 SoundFont.Parser.prototype.parseGenerator = function(chunk) {
   /** @type {ByteArray} */
-  var data = this.input;
+  let data = this.input;
   /** @type {number} */
-  var ip = chunk.offset;
+  let ip = chunk.offset;
   /** @type {number} */
-  var size = chunk.offset + chunk.size;
+  let size = chunk.offset + chunk.size;
   /** @type {number} */
-  var code;
+  let code;
   /** @type {string} */
-  var key;
+  let key;
   /** @type {Array.<Object>} */
-  var output = [];
+  let output = [];
 
   while (ip < size) {
     code = data[ip++] | (data[ip++] << 8);
@@ -634,29 +632,29 @@ SoundFont.Parser.prototype.parseGenerator = function(chunk) {
 
 SoundFont.Parser.prototype.createInstrument = function() {
   /** @type {Array.<Object>} */
-  var instrument = this.instrument;
+  let instrument = this.instrument;
   /** @type {Array.<Object>} */
-  var zone = this.instrumentZone;
+  let zone = this.instrumentZone;
   /** @type {Array.<Object>} */
-  var output = [];
+  let output = [];
   /** @type {number} */
-  var bagIndex;
+  let bagIndex;
   /** @type {number} */
-  var bagIndexEnd;
+  let bagIndexEnd;
   /** @type {Array.<Object>} */
-  var zoneInfo;
+  let zoneInfo;
   /** @type {{generator: Object, generatorInfo: Array.<Object>}} */
-  var instrumentGenerator;
+  let instrumentGenerator;
   /** @type {{modulator: Object, modulatorInfo: Array.<Object>}} */
-  var instrumentModulator;
+  let instrumentModulator;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {number} */
-  var j;
+  let j;
   /** @type {number} */
-  var jl;
+  let jl;
 
   // instrument -> instrument bag -> generator / modulator
   for (i = 0, il = instrument.length; i < il; ++i) {
@@ -688,31 +686,31 @@ SoundFont.Parser.prototype.createInstrument = function() {
 
 SoundFont.Parser.prototype.createPreset = function() {
   /** @type {Array.<Object>} */
-  var preset   = this.presetHeader;
+  let preset   = this.presetHeader;
   /** @type {Array.<Object>} */
-  var zone = this.presetZone;
+  let zone = this.presetZone;
   /** @type {Array.<Object>} */
-  var output = [];
+  let output = [];
   /** @type {number} */
-  var bagIndex;
+  let bagIndex;
   /** @type {number} */
-  var bagIndexEnd;
+  let bagIndexEnd;
   /** @type {Array.<Object>} */
-  var zoneInfo;
+  let zoneInfo;
   /** @type {number} */
-  var instrument;
+  let instrument;
   /** @type {{generator: Object, generatorInfo: Array.<Object>}} */
-  var presetGenerator;
+  let presetGenerator;
   /** @type {{modulator: Object, modulatorInfo: Array.<Object>}} */
-  var presetModulator;
+  let presetModulator;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {number} */
-  var j;
+  let j;
   /** @type {number} */
-  var jl;
+  let jl;
 
   // preset -> preset bag -> generator / modulator
   for (i = 0, il = preset.length; i < il; ++i) {
@@ -758,7 +756,7 @@ SoundFont.Parser.prototype.createPreset = function() {
  * @private
  */
 SoundFont.Parser.prototype.createInstrumentGenerator_ = function(zone, index) {
-  var modgen = this.createBagModGen_(
+  let modgen = this.createBagModGen_(
     zone,
     zone[index].instrumentGeneratorIndex,
     zone[index+1] ? zone[index+1].instrumentGeneratorIndex: this.instrumentZoneGenerator.length,
@@ -778,7 +776,7 @@ SoundFont.Parser.prototype.createInstrumentGenerator_ = function(zone, index) {
  * @private
  */
 SoundFont.Parser.prototype.createInstrumentModulator_ = function(zone, index) {
-  var modgen = this.createBagModGen_(
+  let modgen = this.createBagModGen_(
     zone,
     zone[index].presetModulatorIndex,
     zone[index+1] ? zone[index+1].instrumentModulatorIndex: this.instrumentZoneModulator.length,
@@ -798,7 +796,7 @@ SoundFont.Parser.prototype.createInstrumentModulator_ = function(zone, index) {
  * @private
  */
 SoundFont.Parser.prototype.createPresetGenerator_ = function(zone, index) {
-  var modgen = this.createBagModGen_(
+  let modgen = this.createBagModGen_(
     zone,
     zone[index].presetGeneratorIndex,
     zone[index+1] ? zone[index+1].presetGeneratorIndex : this.presetZoneGenerator.length,
@@ -819,7 +817,7 @@ SoundFont.Parser.prototype.createPresetGenerator_ = function(zone, index) {
    */
 SoundFont.Parser.prototype.createPresetModulator_ = function(zone, index) {
   /** @type {{modgen: Object, modgenInfo: Array.<Object>}} */
-  var modgen = this.createBagModGen_(
+  let modgen = this.createBagModGen_(
     zone,
     zone[index].presetModulatorIndex,
     zone[index+1] ? zone[index+1].presetModulatorIndex : this.presetZoneModulator.length,
@@ -842,9 +840,9 @@ SoundFont.Parser.prototype.createPresetModulator_ = function(zone, index) {
  */
 SoundFont.Parser.prototype.createBagModGen_ = function(zone, indexStart, indexEnd, zoneModGen) {
   /** @type {Array.<Object>} */
-  var modgenInfo = [];
+  let modgenInfo = [];
   /** @type {Object} */
-  var modgen = {
+  let modgen = {
     unknown: [],
     'keyRange': {
       hi: 127,
@@ -852,11 +850,11 @@ SoundFont.Parser.prototype.createBagModGen_ = function(zone, indexStart, indexEn
     }
   }; // TODO
   /** @type {Object} */
-  var info;
+  let info;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
 
   for (i = indexStart, il = indexEnd; i < il; ++i) {
     info = zoneModGen[i];
@@ -940,4 +938,3 @@ SoundFont.Parser.GeneratorEnumeratorTable = [
   'overridingRootKey'
 ];
 
-});

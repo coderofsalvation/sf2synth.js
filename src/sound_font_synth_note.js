@@ -15,7 +15,7 @@ goog.provide('SoundFont.SynthesizerNote');
  * }} instrument
  * @constructor
  */
-SoundFont.SynthesizerNote = function(ctx, destination, instrument) {
+SoundFont.SynthesizerNote = function(ctx, destination, instrument, opts) {
   /** @type {AudioContext} */
   this.ctx = ctx;
   /** @type {AudioNode} */
@@ -79,7 +79,7 @@ SoundFont.SynthesizerNote = function(ctx, destination, instrument) {
 
 SoundFont.SynthesizerNote.prototype.noteOn = function() {
   /** @type {AudioContext} */
-  var ctx = this.ctx;
+  let ctx = this.ctx;
   /** @type {{
    *   channel: number,
    *   key: number,
@@ -90,45 +90,46 @@ SoundFont.SynthesizerNote.prototype.noteOn = function() {
    *   volume: number,
    *   panpot: number
    * }} */
-  var instrument = this.instrument;
+  let instrument = this.instrument;
   /** @type {Int16Array} */
-  var sample = this.buffer;
+  let sample = this.buffer;
   /** @type {AudioBuffer} */
-  var buffer;
+  let buffer;
   /** @type {Float32Array} */
-  var channelData;
+  let channelData;
   /** @type {AudioBufferSourceNode} */
-  var bufferSource;
+  let bufferSource;
   /** @type {BiquadFilterNode} */
-  var filter;
+  let filter;
   /** @type {AudioPannerNode} */
-  var panner;
+  let panner;
   /** @type {AudioGainNode} */
-  var output;
+  let output;
   /** @type {AudioGain} */
-  var outputGain;
+  let outputGain;
   /** @type {number} */
-  var now = this.ctx.currentTime;
+  let now = this.ctx.currentTime;
   /** @type {number} */
-  var volAttack = now + instrument['volAttack'];
+  let volAttack = now + instrument['volAttack'];
   /** @type {number} */
-  var modAttack = now + instrument['modAttack'];
+  let modAttack = now + instrument['modAttack'];
   /** @type {number} */
-  var volDecay = volAttack + instrument['volDecay'];
+  let volDecay = volAttack + instrument['volDecay'];
   /** @type {number} */
-  var modDecay = modAttack + instrument['modDecay'];
+  let modDecay = modAttack + instrument['modDecay'];
   /** @type {number} */
-  var loopStart = instrument['loopStart'] / this.sampleRate;
+  let loopStart = instrument['loopStart'] / this.sampleRate;
   /** @type {number} */
-  var loopEnd = instrument['loopEnd'] / this.sampleRate;
+  let loopEnd = instrument['loopEnd'] / this.sampleRate;
   /** @type {number} */
-  var startTime = instrument['start'] / this.sampleRate;
+  let startTime = instrument['start'] / this.sampleRate;
   /** @type {number} */
-  var baseFreq;
+  let baseFreq;
   /** @type {number} */
-  var peekFreq;
+  let peekFreq;
   /** @type {number} */
-  var sustainFreq;
+  let sustainFreq;
+
 
   sample = sample.subarray(0, sample.length + instrument['end']);
   buffer = this.audioBuffer = ctx.createBuffer(1, sample.length, this.sampleRate);
@@ -191,11 +192,12 @@ SoundFont.SynthesizerNote.prototype.noteOn = function() {
 
   // fire
   bufferSource.start(0, startTime);
+
 };
 
 
 
-SoundFont.SynthesizerNote.prototype.noteOff = function() {
+SoundFont.SynthesizerNote.prototype.noteOff = function(done) {
   /** @type {{
    *   channel: number,
    *   key: number,
@@ -206,17 +208,17 @@ SoundFont.SynthesizerNote.prototype.noteOff = function() {
    *   volume: number,
    *   panpot: number
    * }} */
-  var instrument = this.instrument;
+  let instrument = this.instrument;
   /** @type {AudioBufferSourceNode} */
-  var bufferSource = this.bufferSource;
+  let bufferSource = this.bufferSource;
   /** @type {AudioGainNode} */
-  var output = this.gainOutput;
+  let output = this.gainOutput;
   /** @type {number} */
-  var now = this.ctx.currentTime;
+  let now = this.ctx.currentTime;
   /** @type {number} */
-  var volEndTime = now + instrument['volRelease'];
+  let volEndTime = now + instrument['volRelease'];
   /** @type {number} */
-  var modEndTime = now + instrument['modRelease'];
+  let modEndTime = now + instrument['modRelease'];
 
   if (!this.audioBuffer) {
     return;
@@ -228,40 +230,39 @@ SoundFont.SynthesizerNote.prototype.noteOff = function() {
   output.gain.cancelScheduledValues(0);
   output.gain.linearRampToValueAtTime(0, volEndTime);
   bufferSource.playbackRate.cancelScheduledValues(0);
-  bufferSource.playbackRate.linearRampToValueAtTime(this.computedPlaybackRate, modEndTime);
 
   bufferSource.loop = false;
   bufferSource.stop(volEndTime);
 
   // disconnect
-  //*
-  setTimeout(
-    (function(note) {
-      return function() {
-        note.bufferSource.disconnect(0);
-        note.panner.disconnect(0);
-        note.gainOutput.disconnect(0);
-      };
-    })(this),
-    instrument['volRelease'] * 1000
-  );
-  //*/
-};
+  setTimeout( () => {
+    this.bufferSource.stop()
+    this.bufferSource.buffer = null;
+    this.bufferSource.disconnect();
+    this.gainOutput.disconnect();
+    this.panner.disconnect();
+    this.filter.disconnect();
+    // hint gc to cleanup audio graph
+    for( let i in this ) this[i] = null
+    console.log("note turned off")
+    if( done ) done()
+  }, instrument['volRelease'] * 1000 );
+}
 
 SoundFont.SynthesizerNote.prototype.schedulePlaybackRate = function() {
-  var playbackRate = this.bufferSource.playbackRate;
+  let playbackRate = this.bufferSource.playbackRate;
   /** @type {number} */
-  var computed = this.computedPlaybackRate;
+  let computed = this.computedPlaybackRate;
   /** @type {number} */
-  var start = this.startTime;
+  let start = this.startTime;
   /** @type {Object} */
-  var instrument = this.instrument;
+  let instrument = this.instrument;
   /** @type {number} */
-  var modAttack = start + instrument['modAttack'];
+  let modAttack = start + instrument['modAttack'];
   /** @type {number} */
-  var modDecay = modAttack + instrument['modDecay'];
+  let modDecay = modAttack + instrument['modDecay'];
   /** @type {number} */
-  var peekPitch = computed * Math.pow(
+  let peekPitch = computed * Math.pow(
     Math.pow(2, 1/12),
     this.modEnvToPitch * this.instrument['scaleTuning']
   );

@@ -3,7 +3,6 @@ goog.provide('SoundFont.Synthesizer');
 goog.require('SoundFont.SynthesizerNote');
 goog.require('SoundFont.Parser');
 
-
 /**
  * @constructor
  */
@@ -22,8 +21,6 @@ SoundFont.Synthesizer = function(input) {
   this.ctx = this.getAudioContext();
   /** @type {AudioGainNode} */
   this.gainMaster = this.ctx.createGainNode();
-  /** @type {DynamicsCompressorNode} */
-  this.compressor = this.ctx.createDynamicsCompressor();
   /** @type {AudioBufferSourceNode} */
   this.bufSrc = this.ctx.createBufferSource();
   /** @type {Array.<number>} */
@@ -58,7 +55,7 @@ SoundFont.Synthesizer = function(input) {
  */
 SoundFont.Synthesizer.prototype.getAudioContext = function() {
   /** @type {AudioContext} */
-  var ctx;
+  let ctx;
 
   if (goog.global['AudioContext'] !== void 0) {
     ctx = new goog.global['AudioContext']();
@@ -73,7 +70,6 @@ SoundFont.Synthesizer.prototype.getAudioContext = function() {
   if (ctx.createGainNode === void 0) {
     ctx.createGainNode = ctx.createGain;
   }
-
   return ctx;
 };
 
@@ -212,9 +208,10 @@ SoundFont.Synthesizer.ProgramNames = [
   "Gunshot"
 ];
 
-SoundFont.Synthesizer.prototype.init = function() {
+SoundFont.Synthesizer.prototype.init = function(opts) {
+  this.opts = opts
   /** @type {number} */
-  var i;
+  let i;
 
   this.parser = new SoundFont.Parser(this.input);
   this.bankSet = this.createAllInstruments();
@@ -239,30 +236,30 @@ SoundFont.Synthesizer.prototype.refreshInstruments = function(input) {
 
 SoundFont.Synthesizer.prototype.createAllInstruments = function() {
   /** @type {SoundFont.Parser} */
-  var parser = this.parser;
+  let parser = this.parser;
   parser.parse();
   /** @type {Array} TODO */
-  var presets = parser.createPreset();
+  let presets = parser.createPreset();
   /** @type {Array} TODO */
-  var instruments = parser.createInstrument();
+  let instruments = parser.createInstrument();
   /** @type {Object} */
-  var banks = [];
+  let banks = [];
   /** @type {Array.<Array.<Object>>} */
-  var bank;
+  let bank;
   /** @type {Object} TODO */
-  var preset;
+  let preset;
   /** @type {Object} */
-  var instrument;
+  let instrument;
   /** @type {number} */
-  var presetNumber;
+  let presetNumber;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {number} */
-  var j;
+  let j;
   /** @type {number} */
-  var jl;
+  let jl;
 
   for (i = 0, il = presets.length; i < il; ++i) {
     preset = presets[i];
@@ -294,37 +291,37 @@ SoundFont.Synthesizer.prototype.createAllInstruments = function() {
 };
 
 SoundFont.Synthesizer.prototype.createNoteInfo = function(parser, info, preset) {
-  var generator = info.generator;
+  let generator = info.generator;
   /** @type {number} */
-  var sampleId;
+  let sampleId;
   /** @type {Object} */
-  var sampleHeader;
+  let sampleHeader;
   /** @type {number} */
-  var volAttack;
+  let volAttack;
   /** @type {number} */
-  var volDecay;
+  let volDecay;
   /** @type {number} */
-  var volSustain;
+  let volSustain;
   /** @type {number} */
-  var volRelease;
+  let volRelease;
   /** @type {number} */
-  var modAttack;
+  let modAttack;
   /** @type {number} */
-  var modDecay;
+  let modDecay;
   /** @type {number} */
-  var modSustain;
+  let modSustain;
   /** @type {number} */
-  var modRelease;
+  let modRelease;
   /** @type {number} */
-  var tune;
+  let tune;
   /** @type {number} */
-  var scale;
+  let scale;
   /** @type {number} */
-  var freqVibLFO;
+  let freqVibLFO;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
 
   if (generator['keyRange'] === void 0 || generator['sampleID'] === void 0) {
     return;
@@ -395,6 +392,9 @@ SoundFont.Synthesizer.prototype.createNoteInfo = function(parser, info, preset) 
       'initialFilterFc': this.getModGenAmount(generator, 'initialFilterFc', 13500),
       'modEnvToFilterFc': this.getModGenAmount(generator, 'modEnvToFilterFc'),
       'initialFilterQ': this.getModGenAmount(generator, 'initialFilterQ'),
+      'reverbEffectsSend': this.getModGenAmount(generator, 'reverbEffectsSend'),
+      'chorusEffectsSend': this.getModGenAmount(generator, 'chorusEffectsSend'),
+      'exclusiveClass':   this.getModGenAmount(generator, 'exclusiveClass'),
       'freqVibLFO': freqVibLFO ? Math.pow(2, freqVibLFO / 1200) * 8.176 : void 0
     };
   }
@@ -416,10 +416,15 @@ SoundFont.Synthesizer.prototype.getModGenAmount = function(generator, enumerator
 
 SoundFont.Synthesizer.prototype.start = function() {
   this.bufSrc.connect(this.gainMaster);
-  this.gainMaster.connect(this.ctx.destination);
+  //this.gainMaster.connect(this.ctx.destination);
   this.bufSrc.start(0);
 
   this.setMasterVolume(16383);
+  if( this.opts && this.opts.mixer ) this.opts.mixer({
+    input: this.gainMaster, 
+    output: this.ctx.destination, 
+    ctx: this.ctx
+  })
 };
 
 SoundFont.Synthesizer.prototype.setMasterVolume = function(volume) {
@@ -441,23 +446,23 @@ SoundFont.Synthesizer.TableHeader = ['Instrument', 'Vol', 'Pan', 'Bend', 'Range'
 
 SoundFont.Synthesizer.prototype.drawSynth = function() {
   /** @type {HTMLTableElement} */
-  var table = this.table =
+  let table = this.table =
     /** @type {HTMLTableElement} */(document.createElement('table'));
   /** @type {HTMLTableSectionElement} */
-  var head =
+  let head =
     /** @type {HTMLTableSectionElement} */(document.createElement('thead'));
   /** @type {HTMLTableSectionElement} */
-  var body =
+  let body =
     /** @type {HTMLTableSectionElement} */
     (document.createElement('tbody'));
   /** @type {HTMLTableRowElement} */
-  var tableLine;
+  let tableLine;
   /** @type {NodeList} */
-  var notes;
+  let notes;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var j;
+  let j;
 
   head.appendChild(this.createTableLine(SoundFont.Synthesizer.TableHeader, true));
 
@@ -466,8 +471,8 @@ SoundFont.Synthesizer.prototype.drawSynth = function() {
     body.appendChild(tableLine);
 
     if (i !== 9) {
-      var select = document.createElement('select');
-      var option;
+      let select = document.createElement('select');
+      let option;
       for (j = 0; j < 128; ++j) {
         option = document.createElement('option');
         option.textContent = SoundFont.Synthesizer.ProgramNames[j];
@@ -524,7 +529,7 @@ SoundFont.Synthesizer.prototype.drawSynth = function() {
 };
 
 SoundFont.Synthesizer.prototype.removeSynth = function() {
-  var table = this.table;
+  let table = this.table;
 
   if (table) {
     table.parentNode.removeChild(table);
@@ -539,15 +544,15 @@ SoundFont.Synthesizer.prototype.removeSynth = function() {
  */
 SoundFont.Synthesizer.prototype.createTableLine = function(array, isTitleLine) {
   /** @type {HTMLTableRowElement} */
-  var tr = /** @type {HTMLTableRowElement} */(document.createElement('tr'));
+  let tr = /** @type {HTMLTableRowElement} */(document.createElement('tr'));
   /** @type {HTMLTableCellElement} */
-  var cell;
+  let cell;
   /** @type {boolean} */
-  var isArray = array instanceof Array;
+  let isArray = array instanceof Array;
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il = isArray ? array.length : /** @type {number} */(array);
+  let il = isArray ? array.length : /** @type {number} */(array);
 
   for (i = 0; i < il; ++i) {
     cell =
@@ -568,13 +573,13 @@ SoundFont.Synthesizer.prototype.createTableLine = function(array, isTitleLine) {
  */
 SoundFont.Synthesizer.prototype.noteOn = function(channel, key, velocity) {
   /** @type {Object} */
-  var bank = this.bankSet[channel === 9 ? 128 : this.bank];
+  let bank = this.bankSet[channel === 9 ? 128 : this.bank];
   /** @type {Object} */
-  var instrument = bank[this.channelInstrument[channel]];
+  let instrument = bank[this.channelInstrument[channel]];
   /** @type {Object} */
-  var instrumentKey;
+  let instrumentKey;
   /** @type {SoundFont.SynthesizerNote} */
-  var note;
+  let note;
 
   if (this.table) {
     this.table.querySelector(
@@ -609,7 +614,7 @@ SoundFont.Synthesizer.prototype.noteOn = function(channel, key, velocity) {
     return;
   }
 
-  var panpot = this.channelPanpot[channel] - 64;
+  let panpot = this.channelPanpot[channel] - 64;
   panpot /= panpot < 0 ? 64 : 63;
 
   // create note information
@@ -622,7 +627,7 @@ SoundFont.Synthesizer.prototype.noteOn = function(channel, key, velocity) {
   instrumentKey['pitchBendSensitivity'] = this.channelPitchBendSensitivity[channel];
 
   // note on
-  note = new SoundFont.SynthesizerNote(this.ctx, this.gainMaster, instrumentKey);
+  note = new SoundFont.SynthesizerNote(this.ctx, this.gainMaster, instrumentKey, this.opts);
   note.noteOn();
   this.currentNoteOn[channel].push(note);
 };
@@ -634,17 +639,17 @@ SoundFont.Synthesizer.prototype.noteOn = function(channel, key, velocity) {
  */
 SoundFont.Synthesizer.prototype.noteOff = function(channel, key, velocity) {
   /** @type {Object} */
-  var bank = this.bankSet[channel === 9 ? 128 : this.bank];
+  let bank = this.bankSet[channel === 9 ? 128 : this.bank];
   /** @type {Object} */
-  var instrument = bank[this.channelInstrument[channel]];
+  let instrument = bank[this.channelInstrument[channel]];
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {Array.<SoundFont.SynthesizerNote>} */
-  var currentNoteOn = this.currentNoteOn[channel];
+  let currentNoteOn = this.currentNoteOn[channel];
   /** @type {SoundFont.SynthesizerNote} */
-  var note;
+  let note;
 
   if (this.table) {
     this.table.querySelector(
@@ -718,15 +723,15 @@ SoundFont.Synthesizer.prototype.panpotChange = function(channel, panpot) {
  */
 SoundFont.Synthesizer.prototype.pitchBend = function(channel, lowerByte, higherByte) {
   /** @type {number} */
-  var bend = (lowerByte & 0x7f) | ((higherByte & 0x7f) << 7);
+  let bend = (lowerByte & 0x7f) | ((higherByte & 0x7f) << 7);
   /** @type {number} */
-  var i;
+  let i;
   /** @type {number} */
-  var il;
+  let il;
   /** @type {Array.<SoundFont.SynthesizerNote>} */
-  var currentNoteOn = this.currentNoteOn[channel];
+  let currentNoteOn = this.currentNoteOn[channel];
   /** @type {number} */
-  var calculated = bend - 8192;
+  let calculated = bend - 8192;
 
   if (this.table) {
     this.table.querySelector('tbody > tr:nth-child(' + (channel+1) + ') > td:nth-child(4)').textContent = calculated;
@@ -756,7 +761,9 @@ SoundFont.Synthesizer.prototype.pitchBendSensitivity = function(channel, sensiti
  */
 SoundFont.Synthesizer.prototype.allSoundOff = function(channel) {
   /** @type {Array.<SoundFont.SynthesizerNote>} */
-  var currentNoteOn = this.currentNoteOn[channel];
+  let currentNoteOn = this.currentNoteOn[channel];
+  console.log(channel)
+  console.dir(this.currentNoteOn)
 
   while (currentNoteOn.length > 0) {
     this.noteOff(channel, currentNoteOn[0].key, 0);
@@ -769,4 +776,9 @@ SoundFont.Synthesizer.prototype.allSoundOff = function(channel) {
 SoundFont.Synthesizer.prototype.resetAllControl = function(channel) {
   this.pitchBend(channel, 0x00, 0x40); // 8192
 };
+
+SoundFont.fx = {
+  /** @type {DynamicsCompressorNode} */
+  compressor: function(){ return this.ctx.createDynamicsCompressor() }
+}
 
