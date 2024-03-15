@@ -54,6 +54,8 @@ SoundFont.SynthesizerNote = function(ctx, destination, instrument, opts) {
   this.pitchBendSensitivity = instrument['pitchBendSensitivity'];
   /** @type {number} */
   this.modEnvToPitch = instrument['modEnvToPitch'];
+  /** @type {number} */
+  this.sampleOffset = instrument['sampleOffset'];
 
   // state
   /** @type {number} */
@@ -92,7 +94,7 @@ SoundFont.SynthesizerNote.prototype.noteOn = function() {
    * }} */
   let instrument = this.instrument;
   /** @type {Int16Array} */
-  let sample = this.buffer;
+  let sample = this.buffer
   /** @type {AudioBuffer} */
   let buffer;
   /** @type {Float32Array} */
@@ -129,10 +131,18 @@ SoundFont.SynthesizerNote.prototype.noteOn = function() {
   let peekFreq;
   /** @type {number} */
   let sustainFreq;
+  let sampleOffset = (sample.length/128) * this.sampleOffset
+  let sampleLength = (sample.length - sampleOffset)+ instrument['end']
 
+  if( sampleLength == 0 ){ // workaround to prevent buffersource from crashing
+    sampleOffset -= 1      
+    sampleLength += 1 
+  }
+  console.dir(instrument)
+  debugger
 
-  sample = sample.subarray(0, sample.length + instrument['end']);
-  buffer = this.audioBuffer = ctx.createBuffer(1, sample.length, this.sampleRate);
+  sample = sample.subarray( sampleOffset, sampleLength )
+  buffer = this.audioBuffer = ctx.createBuffer(1, sampleLength, this.sampleRate);
   channelData = buffer.getChannelData(0);
   channelData.set(sample);
 

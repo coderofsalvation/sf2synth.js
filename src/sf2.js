@@ -514,7 +514,8 @@ SoundFont.Parser.prototype.parseModulator = function(chunk) {
 
     while (ip < size) {
       // Src  Oper
-      // TODO
+      cc = data[ip++] & 0x7f
+      typePolarityDirectionCC = data[ip++] // *TODO*
       ip += 2;
 
       // Dest Oper
@@ -525,7 +526,7 @@ SoundFont.Parser.prototype.parseModulator = function(chunk) {
         output.push({
           type: key,
           value: {
-            code: code,
+            cc, 
             amount: data[ip] | (data[ip+1] << 8) << 16 >> 16,
             lo: data[ip++],
             hi: data[ip++]
@@ -548,6 +549,7 @@ SoundFont.Parser.prototype.parseModulator = function(chunk) {
             break;
           default:
             output.push({
+              cc,
               type: key,
               value: {
                 amount: data[ip++] | (data[ip++] << 8) << 16 >> 16
@@ -594,7 +596,6 @@ SoundFont.Parser.prototype.parseGenerator = function(chunk) {
       output.push({
         type: key,
         value: {
-          code: code,
           amount: data[ip] | (data[ip+1] << 8) << 16 >> 16,
           lo: data[ip++],
           hi: data[ip++]

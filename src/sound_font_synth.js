@@ -37,6 +37,8 @@ SoundFont.Synthesizer = function(input) {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   this.channelPitchBendSensitivity =
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  this.channelSampleOffset =
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   /** @type {Array.<Array.<SoundFont.SynthesizerNote>>} */
   this.currentNoteOn = [
     [], [], [], [], [], [], [], [],
@@ -283,14 +285,14 @@ SoundFont.Synthesizer.prototype.createAllInstruments = function() {
     bank[presetNumber].name = preset.name;
 
     for (j = 0, jl = instrument.info.length; j < jl; ++j) {
-      this.createNoteInfo(parser, instrument.info[j], bank[presetNumber]);
+      this.createNoteInfo(parser, instrument.info[j], bank[presetNumber], instrument);
     }
   }
 
   return banks;
 };
 
-SoundFont.Synthesizer.prototype.createNoteInfo = function(parser, info, preset) {
+SoundFont.Synthesizer.prototype.createNoteInfo = function(parser, info, preset, instrument) {
   let generator = info.generator;
   /** @type {number} */
   let sampleId;
@@ -351,6 +353,7 @@ SoundFont.Synthesizer.prototype.createNoteInfo = function(parser, info, preset) 
     sampleId = this.getModGenAmount(generator, 'sampleID');
     sampleHeader = parser.sampleHeader[sampleId];
     preset[i] = {
+      instrument,
       'sample': parser.sample[sampleId],
       'sampleRate': sampleHeader.sampleRate,
       'basePlaybackRate': Math.pow(
@@ -625,9 +628,10 @@ SoundFont.Synthesizer.prototype.noteOn = function(channel, key, velocity) {
   instrumentKey['volume'] = this.channelVolume[channel] / 127;
   instrumentKey['pitchBend'] = this.channelPitchBend[channel] - 8192;
   instrumentKey['pitchBendSensitivity'] = this.channelPitchBendSensitivity[channel];
+  instrumentKey['sampleOffset'] = this.channelSampleOffset[channel]
 
   // note on
-  note = new SoundFont.SynthesizerNote(this.ctx, this.gainMaster, instrumentKey, this.opts);
+  note = new SoundFont.SynthesizerNote(this.ctx, this.gainMaster, instrumentKey, this.opts, this);
   note.noteOn();
   this.currentNoteOn[channel].push(note);
 };
@@ -757,6 +761,14 @@ SoundFont.Synthesizer.prototype.pitchBendSensitivity = function(channel, sensiti
 };
 
 /**
+ * @param {number} set sample Offset 
+ * @param {number} offset
+ */
+SoundFont.Synthesizer.prototype.sampleOffset = function(channel, offset) {
+  this.channelSampleOffset[channel] = offset;
+};
+
+/**
  * @param {number} channel 音を消すチャンネル.
  */
 SoundFont.Synthesizer.prototype.allSoundOff = function(channel) {
@@ -776,9 +788,4 @@ SoundFont.Synthesizer.prototype.allSoundOff = function(channel) {
 SoundFont.Synthesizer.prototype.resetAllControl = function(channel) {
   this.pitchBend(channel, 0x00, 0x40); // 8192
 };
-
-SoundFont.fx = {
-  /** @type {DynamicsCompressorNode} */
-  compressor: function(){ return this.ctx.createDynamicsCompressor() }
-}
 
